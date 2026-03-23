@@ -1,24 +1,38 @@
 # Hand-coded CNN for MNIST Digit Recognition
 
-A CNN built from scratch using only NumPy, trained on the MNIST handwritten digit dataset.
+Two implementations: pure NumPy from scratch, and PyTorch.
+
+## File Structure
+
+```
+├── handCnn.py     # Pure NumPy CNN (for learning the fundamentals)
+├── torchCnn.py    # PyTorch version (trains and saves the model)
+├── predict.py     # Loads the model, drawing canvas for real-time prediction
+└── data/          # MNIST dataset (download manually)
+```
 
 ## Model Architecture
 
+### NumPy version (handCnn.py)
 ```
 Input (N, 1, 28, 28)
-  → Conv2D(1→4, 3×3) + ReLU
-  → MaxPool2D(2×2)         → (N, 4, 13, 13)
-  → Conv2D(4→8, 3×3) + ReLU
-  → MaxPool2D(2×2)         → (N, 8, 5, 5)
-  → Flatten                → (N, 200)
-  → Linear(200→10)
-  → Softmax
+  → Conv2D(1→4, 3×3) + ReLU → MaxPool2D(2×2)   → (N, 4, 13, 13)
+  → Conv2D(4→8, 3×3) + ReLU → MaxPool2D(2×2)   → (N, 8, 5, 5)
+  → Flatten → Linear(200→10) → Softmax
+```
+
+### PyTorch version (torchCnn.py)
+```
+Input (N, 1, 28, 28)
+  → Conv2D(1→8,  3×3, padding=1) + ReLU → MaxPool2D(2×2)  → (N, 8, 14, 14)
+  → Conv2D(8→16, 3×3, padding=1) + ReLU → MaxPool2D(2×2)  → (N, 16, 7, 7)
+  → Flatten → Linear(784→128) + ReLU → Linear(128→10)
 ```
 
 ## Requirements
 
 ```bash
-pip install numpy matplotlib pillow
+pip install numpy matplotlib pillow torch
 ```
 
 ## Dataset
@@ -34,13 +48,20 @@ Available at: http://yann.lecun.com/exdb/mnist/
 
 ## Usage
 
+### NumPy version
 ```bash
 python handCnn.py
 ```
+Trains on the first 2000 samples. After training: plots loss curve, shows test predictions, opens drawing canvas.
 
-Training uses the first 2000 samples (pure Python loops are slow). After training:
+### PyTorch version
+```bash
+# Train and save the model
+python torchCnn.py
 
-1. Loss curve is plotted
-2. Accuracy is evaluated on the first 500 test samples (~90%)
-3. 10 random test images are shown with predictions
-4. A drawing canvas opens — draw a digit and click **Predict**
+# Load the model and open drawing canvas
+python predict.py
+```
+
+Training automatically uses GPU if available. Model is saved to `mnist_cnn.pth`.
+
