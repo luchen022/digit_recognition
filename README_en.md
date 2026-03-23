@@ -1,67 +1,78 @@
-# Hand-coded CNN for MNIST Digit Recognition
+# PyTorch Deep Learning Study Project
 
-Two implementations: pure NumPy from scratch, and PyTorch.
+[中文版](README.md)
 
-## File Structure
+Classic deep learning models implemented in PyTorch. Each module is self-contained and designed for step-by-step learning.
+
+## Project Structure
 
 ```
-├── handCnn.py     # Pure NumPy CNN (for learning the fundamentals)
-├── torchCnn.py    # PyTorch version (trains and saves the model)
-├── predict.py     # Loads the model, drawing canvas for real-time prediction
-└── data/          # MNIST dataset (download manually)
+├── cnn/                        # Convolutional Neural Network — handwritten digit recognition
+│   ├── handCnn.py              # Pure NumPy CNN (for understanding the fundamentals)
+│   ├── torchCnn.py             # PyTorch CNN (trains and saves the model)
+│   ├── predict.py              # Loads the model, drawing canvas for real-time prediction
+│   └── data/                   # MNIST dataset
+│
+└── rnn/                        # Recurrent Neural Network — Chinese sentiment classification
+    ├── torchRnn.py             # Basic RNN (demonstrates vanishing gradient problem)
+    ├── torchLSTM.py            # LSTM (solves vanishing gradient, better performance)
+    ├── lstmPredict.py          # Loads LSTM model, interactive sentiment prediction
+    └── ChnSentiCorp_htl_all.csv  # Chinese hotel review dataset (7766 samples)
 ```
 
-## Model Architecture
+## CNN Module
+
+MNIST handwritten digit recognition, two versions:
 
 ### NumPy version (handCnn.py)
+Pure NumPy implementation for understanding convolution, pooling, and backpropagation from scratch.
 ```
 Input (N, 1, 28, 28)
-  → Conv2D(1→4, 3×3) + ReLU → MaxPool2D(2×2)   → (N, 4, 13, 13)
-  → Conv2D(4→8, 3×3) + ReLU → MaxPool2D(2×2)   → (N, 8, 5, 5)
+  → Conv2D(1→4, 3×3) + ReLU → MaxPool2D(2×2)
+  → Conv2D(4→8, 3×3) + ReLU → MaxPool2D(2×2)
   → Flatten → Linear(200→10) → Softmax
 ```
 
 ### PyTorch version (torchCnn.py)
 ```
 Input (N, 1, 28, 28)
-  → Conv2D(1→8,  3×3, padding=1) + ReLU → MaxPool2D(2×2)  → (N, 8, 14, 14)
-  → Conv2D(8→16, 3×3, padding=1) + ReLU → MaxPool2D(2×2)  → (N, 16, 7, 7)
+  → Conv2D(1→8,  3×3) + ReLU → MaxPool2D(2×2)
+  → Conv2D(8→16, 3×3) + ReLU → MaxPool2D(2×2)
   → Flatten → Linear(784→128) + ReLU → Linear(128→10)
+```
+
+```bash
+python cnn/torchCnn.py   # train, saves to cnn/mnist_cnn.pth
+python cnn/predict.py    # open drawing canvas for prediction
+```
+
+Dataset: [MNIST](http://yann.lecun.com/exdb/mnist/), place files in `cnn/data/`.
+
+## RNN Module
+
+Chinese hotel review sentiment classification (ChnSentiCorp), binary (positive/negative).
+
+Uses character-level embedding — each Chinese character maps to a learnable vector, no tokenizer needed.
+
+### Basic RNN (torchRnn.py)
+Demonstrates the vanishing gradient problem. Unstable training on long sequences, accuracy ~68% (close to majority-class guessing).
+
+### LSTM (torchLSTM.py)
+Gating mechanisms solve vanishing gradients, significantly better performance.
+```
+Input text → character id sequence (length 50)
+  → Embedding(vocab_size → 128)
+  → LSTM(128 → 128, 2 layers)
+  → Linear(128 → 1) → sigmoid → positive/negative
+```
+
+```bash
+python rnn/torchLSTM.py    # train, saves to rnn/sentiment_lstm.pth
+python rnn/lstmPredict.py  # interactive sentiment prediction
 ```
 
 ## Requirements
 
 ```bash
-pip install numpy matplotlib pillow torch
+pip install torch numpy matplotlib pillow
 ```
-
-## Dataset
-
-Download the MNIST dataset and place the following files in a `data/` folder:
-
-- `train-images-idx3-ubyte.gz`
-- `train-labels-idx1-ubyte.gz`
-- `t10k-images-idx3-ubyte.gz`
-- `t10k-labels-idx1-ubyte.gz`
-
-Available at: http://yann.lecun.com/exdb/mnist/
-
-## Usage
-
-### NumPy version
-```bash
-python handCnn.py
-```
-Trains on the first 2000 samples. After training: plots loss curve, shows test predictions, opens drawing canvas.
-
-### PyTorch version
-```bash
-# Train and save the model
-python torchCnn.py
-
-# Load the model and open drawing canvas
-python predict.py
-```
-
-Training automatically uses GPU if available. Model is saved to `mnist_cnn.pth`.
-
